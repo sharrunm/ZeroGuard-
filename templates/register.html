@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register – CyberCrimeAI Portal</title>
+  <meta name="description" content="Create your CyberCrimeAI account to securely report cybercrime, track cases, and access AI-powered legal assistance.">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script defer src="{{ url_for('static', filename='js/main.js') }}"></script>
+  <style>
+    /* ---- Register Page Layout ---- */
+    .register-section {
+      min-height: 100vh;
+      padding-top: var(--nav-height);
+      display: flex;
+      background: var(--background);
+    }
+
+    /* ---- Left Trust Panel ---- */
+    .register-trust-panel {
+      width: 44%;
+      background: linear-gradient(160deg, var(--secondary) 0%, var(--primary) 40%, #0A3559 75%, #051E38 100%);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 64px 48px;
+      overflow: hidden;
+    }
+
+    .register-trust-panel::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+    }
+
+    .trust-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      pointer-events: none;
+    }
+
+    .trust-orb-1 {
+      width: 340px;
+      height: 340px;
+      background: radial-gradient(circle, rgba(46,125,50,0.25) 0%, transparent 70%);
+      top: -80px;
+      right: -60px;
+      animation: float 10s ease-in-out infinite;
+    }
+
+    .trust-orb-2 {
+      width: 260px;
+      height: 260px;
+      background: radial-gradient(circle, rgba(15,76,129,0.3) 0%, transparent 70%);
+      bottom: -60px;
+      left: -40px;
+      animation: float 12s ease-in-out infinite reverse;
+    }
+
+    .trust-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .trust-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 18px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: var(--radius-full);
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: rgba(255,255,255,0.85);
+      letter-spacing: 0.05em;
+      margin-bottom: 28px;
+      backdrop-filter: blur(8px);
+    }
+
+    .trust-badge-dot {
+      width: 8px;
+      height: 8px;
+      background: #4CAF50;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #4CAF50;
+      animation: blink 1.5s ease-in-out infinite;
+    }
+
+    .trust-heading {
+      font-family: var(--font-display);
+      font-size: clamp(1.8rem, 2.6vw, 2.4rem);
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.15;
+      margin-bottom: 16px;
+      letter-spacing: -0.01em;
+    }
+
+    .trust-heading span {
+      background: linear-gradient(135deg, #4FC3F7, #81C784);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .trust-subtitle {
+      font-size: 0.95rem;
+      color: rgba(255,255,255,0.6);
+      line-height: 1.7;
+      margin-bottom: 40px;
+      max-width: 380px;
+    }
+
+    .trust-features {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      margin-bottom: 44px;
+    }
+
+    .trust-feature {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+    }
+
+    .trust-feature-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+
+    .trust-feature-text h4 {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 2px;
+    }
+
+    .trust-feature-text p {
+      font-size: 0.78rem;
+      color: rgba(255,255,255,0.55);
+      line-height: 1.5;
+    }
+
+    .trust-stats-row {
+      display: flex;
+      gap: 32px;
+      padding-top: 28px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .trust-stat {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .trust-stat-number {
+      font-family: var(--font-display);
+      font-size: 1.7rem;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1;
+    }
+
+    .trust-stat-label {
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.5);
+      font-weight: 500;
+      margin-top: 4px;
+    }
+
+    .trust-stat-divider {
+      width: 1px;
+      background: rgba(255,255,255,0.12);
+      align-self: stretch;
+    }
+
+    /* ---- Right Form Panel ---- */
+    .register-form-panel {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 40px;
+      overflow-y: auto;
+    }
+
+    .register-form-wrapper {
+      width: 100%;
+      max-width: 480px;
+    }
+
+    .form-header {
+      margin-bottom: 32px;
+    }
+
+    .form-header h2 {
+      font-family: var(--font-display);
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+
+    .form-header p {
+      font-size: 0.92rem;
+      color: var(--text-muted);
+    }
+
+    .form-header p a {
+      color: var(--primary);
+      font-weight: 600;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    .form-header p a:hover {
+      color: var(--primary-light);
+    }
+
+    /* ---- Form Fields ---- */
+    .register-form {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .form-group label .req {
+      color: var(--danger);
+      font-size: 0.75rem;
+    }
+
+    .input-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .input-wrap .input-icon {
+      position: absolute;
+      left: 14px;
+      display: flex;
+      align-items: center;
+      color: var(--text-muted);
+      pointer-events: none;
+      transition: color 0.2s;
+    }
+
+    .input-wrap input {
+      width: 100%;
+      padding: 13px 14px 13px 44px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-md);
+      font-family: var(--font-sans);
+      font-size: 0.92rem;
+      color: var(--text-primary);
+      background: var(--surface);
+      transition: var(--transition-fast);
+      outline: none;
+    }
+
+    .input-wrap input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-glow);
+    }
+
+    .input-wrap input:focus + .input-icon,
+    .input-wrap input:focus ~ .input-icon {
+      color: var(--primary);
+    }
+
+    .input-wrap input::placeholder {
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+
+    .input-wrap .toggle-password {
+      position: absolute;
+      right: 14px;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: color 0.2s;
+      background: none;
+      border: none;
+      padding: 4px;
+    }
+
+    .input-wrap .toggle-password:hover {
+      color: var(--primary);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    /* ---- Password Strength Meter ---- */
+    .password-strength {
+      margin-top: 4px;
+    }
+
+    .strength-bar-bg {
+      height: 5px;
+      background: var(--surface-2);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+    }
+
+    .strength-bar-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: var(--radius-full);
+      transition: width 0.4s ease, background 0.4s ease;
+    }
+
+    .strength-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 6px;
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
+
+    .strength-text {
+      color: var(--text-muted);
+    }
+
+    .strength-requirements {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px 12px;
+      margin-top: 8px;
+    }
+
+    .strength-req {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      transition: color 0.2s;
+    }
+
+    .strength-req.met {
+      color: var(--accent);
+    }
+
+    .strength-req .req-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--border);
+      transition: background 0.2s;
+      flex-shrink: 0;
+    }
+
+    .strength-req.met .req-dot {
+      background: var(--accent);
+    }
+
+    /* ---- Checkbox ---- */
+    .form-checkbox {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      cursor: pointer;
+    }
+
+    .form-checkbox input[type="checkbox"] {
+      display: none;
+    }
+
+    .checkbox-custom {
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: var(--transition-fast);
+      margin-top: 1px;
+    }
+
+    .checkbox-custom svg {
+      opacity: 0;
+      transform: scale(0.5);
+      transition: all 0.2s ease;
+    }
+
+    .form-checkbox input:checked + .checkbox-custom {
+      background: var(--primary);
+      border-color: var(--primary);
+    }
+
+    .form-checkbox input:checked + .checkbox-custom svg {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .checkbox-label {
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    .checkbox-label a {
+      color: var(--primary);
+      font-weight: 600;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    /* ---- Submit Button ---- */
+    .register-btn {
+      width: 100%;
+      padding: 15px 28px;
+      border: none;
+      border-radius: var(--radius-full);
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fff;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      box-shadow: 0 4px 20px var(--primary-glow);
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .register-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0.15);
+      opacity: 0;
+      transition: var(--transition-fast);
+    }
+
+    .register-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px var(--primary-glow);
+    }
+
+    .register-btn:hover::before {
+      opacity: 1;
+    }
+
+    .register-btn:active {
+      transform: translateY(0);
+    }
+
+    /* ---- Divider ---- */
+    .form-divider {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin: 4px 0;
+    }
+
+    .form-divider::before,
+    .form-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .form-divider span {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    /* ---- Social Buttons ---- */
+    .social-login-btns {
+      display: flex;
+      gap: 12px;
+    }
+
+    .social-btn-auth {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-md);
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      background: var(--surface);
+      cursor: pointer;
+      transition: var(--transition-fast);
+    }
+
+    .social-btn-auth:hover {
+      border-color: var(--primary);
+      background: rgba(15,76,129,0.04);
+      color: var(--primary);
+      transform: translateY(-1px);
+    }
+
+    /* ---- Login Link ---- */
+    .login-link {
+      text-align: center;
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .login-link a {
+      color: var(--primary);
+      font-weight: 700;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .login-link a:hover {
+      color: var(--primary-light);
+      text-decoration: underline;
+    }
+
+    /* ---- Responsive ---- */
+    @media (max-width: 1024px) {
+      .register-trust-panel {
+        width: 40%;
+        padding: 48px 32px;
+      }
+      .register-form-panel {
+        padding: 40px 28px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .register-section {
+        flex-direction: column;
+      }
+      .register-trust-panel {
+        width: 100%;
+        padding: 40px 24px;
+        min-height: auto;
+      }
+      .trust-stats-row {
+        gap: 24px;
+      }
+      .register-form-panel {
+        padding: 36px 20px;
+      }
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .trust-heading {
+        font-size: 1.5rem;
+      }
+      .trust-features {
+        gap: 16px;
+        margin-bottom: 32px;
+      }
+      .trust-stats-row {
+        gap: 20px;
+      }
+      .trust-stat-number {
+        font-size: 1.3rem;
+      }
+      .social-login-btns {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <div class="nav-logo-wrap">
+        <a href="{{ url_for('home') }}" class="nav-logo">
+          <div class="nav-logo-icon" style="background:none;box-shadow:none;border-radius:50%;">
+            <img src="../static/images/logo.jpg" alt="Logo" style="width:100%;height:100%;object-fit:cover;">
+          </div>
+          <div class="nav-logo-text"><h1>CyberCrimeAI</h1><span>SECURE PORTAL</span></div>
+        </a>
+        <div class="nav-divider"></div>
+      </div>
+      <div class="nav-links">
+        <a href="{{ url_for('home') }}" class="nav-link">Home</a>
+        <a href="{{ url_for('report') }}" class="nav-link">Report Crime</a>
+        <a href="{{ url_for('chatbot') }}" class="nav-link">AI Chat</a>
+        <a href="{{ url_for('awareness') }}" class="nav-link">Awareness</a>
+        <a href="{{ url_for('emergency') }}" class="nav-link">Emergency</a>
+        <a href="{{ url_for('dashboard') }}" class="nav-link">Dashboard</a>
+      </div>
+      <div class="nav-actions">
+        <a href="{{ url_for('emergency') }}" class="nav-emergency"><div class="pulse-dot"></div>1930</a>
+        <a href="{{ url_for('login') }}" class="nav-btn-login">Login</a>
+        <a href="{{ url_for('register') }}" class="nav-btn-register">Register</a>
+      </div>
+      <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
+    </div>
+  </nav>
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="{{ url_for('home') }}" class="nav-link">Home</a>
+    <a href="{{ url_for('report') }}" class="nav-link">Report Crime</a>
+    <a href="{{ url_for('chatbot') }}" class="nav-link">AI Chat</a>
+    <a href="{{ url_for('awareness') }}" class="nav-link">Awareness</a>
+    <a href="{{ url_for('emergency') }}" class="nav-link">Emergency</a>
+    <a href="{{ url_for('dashboard') }}" class="nav-link">Dashboard</a>
+    <div class="nav-actions" style="flex-direction:column;gap:8px;">
+      <a href="{{ url_for('login') }}" class="btn btn-outline" style="text-align:center;">Login</a>
+      <a href="{{ url_for('register') }}" class="btn btn-primary" style="text-align:center;">Register</a>
+    </div>
+  </div>
+
+  <!-- REGISTER SECTION -->
+  <section class="register-section">
+
+    <!-- Left Trust Panel -->
+    <div class="register-trust-panel">
+      <div class="trust-orb trust-orb-1"></div>
+      <div class="trust-orb trust-orb-2"></div>
+
+      <div class="trust-content animate-fade-up">
+        <div class="trust-badge">
+          <div class="trust-badge-dot"></div>
+          SECURE REGISTRATION
+        </div>
+
+        <h2 class="trust-heading">
+          Join India's <span>AI-Powered</span><br>Cyber Protection Network
+        </h2>
+
+        <p class="trust-subtitle">
+          Create your account to access AI-powered cybercrime reporting, real-time case tracking, and personalised safety guidance.
+        </p>
+
+        <div class="trust-features">
+          <div class="trust-feature">
+            <div class="trust-feature-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4CAF50" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <div class="trust-feature-text">
+              <h4>Military-Grade Encryption</h4>
+              <p>AES-256 encryption protects every byte of your data in transit and at rest.</p>
+            </div>
+          </div>
+          <div class="trust-feature">
+            <div class="trust-feature-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4FC3F7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </div>
+            <div class="trust-feature-text">
+              <h4>Privacy by Design</h4>
+              <p>PII auto-redaction ensures your personal data never leaves your device unprotected.</p>
+            </div>
+          </div>
+          <div class="trust-feature">
+            <div class="trust-feature-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFB74D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            </div>
+            <div class="trust-feature-text">
+              <h4>Legal-Grade Documents</h4>
+              <p>AI generates complaint PDFs accepted by cybercrime.gov.in and police authorities.</p>
+            </div>
+          </div>
+          <div class="trust-feature">
+            <div class="trust-feature-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#CE93D8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="9" y1="9" x2="21" y2="9"/><line x1="9" y1="15" x2="21" y2="15"/></svg>
+            </div>
+            <div class="trust-feature-text">
+              <h4>Real-Time Case Tracking</h4>
+              <p>Monitor your complaint status through a personal dashboard with live updates.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="trust-stats-row">
+          <div class="trust-stat">
+            <div class="trust-stat-number">12K+</div>
+            <div class="trust-stat-label">Cases Filed</div>
+          </div>
+          <div class="trust-stat-divider"></div>
+          <div class="trust-stat">
+            <div class="trust-stat-number">98%</div>
+            <div class="trust-stat-label">Accuracy Rate</div>
+          </div>
+          <div class="trust-stat-divider"></div>
+          <div class="trust-stat">
+            <div class="trust-stat-number">&lt; 3m</div>
+            <div class="trust-stat-label">Avg. Resolution</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Form Panel -->
+    <div class="register-form-panel">
+      <div class="register-form-wrapper animate-fade-up" style="animation-delay:0.15s;">
+
+        <div class="form-header">
+          <h2>Create your account</h2>
+          <p>Already have an account? <a href="{{ url_for('login') }}">Sign in here</a></p>
+        </div>
+
+        <form method="POST" action="{{ url_for('register') }}">
+
+          <!-- Full Name -->
+          <div class="form-group">
+            <label>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              Full Name <span class="req">*</span>
+            </label>
+            <div class="input-wrap">
+              <input
+                  type="text"
+                  name="fullname"
+                  placeholder="Full Name"
+                  required>
+              <span class="input-icon" style="pointer-events:none;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              </span>
+            </div>
+          </div>
+
+          <!-- Email -->
+          <div class="form-group">
+            <label>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              Email Address <span class="req">*</span>
+            </label>
+            <div class="input-wrap">
+              <input
+                type="email"
+                name="email"
+                placeholder="Email"
+                required>
+              <span class="input-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              </span>
+            </div>
+          </div>
+
+          <!-- Phone -->
+          <div class="form-group">
+            <label>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.63 3.42 2 2 0 0 1 3.6 1.24h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 9a16 16 0 0 0 6 6l1.06-1.06a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+              Phone Number <span class="req">*</span>
+            </label>
+            <div class="input-wrap">
+              <input
+                type="text"
+                name="phone"
+                placeholder="Phone Number">
+              <span class="input-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.63 3.42 2 2 0 0 1 3.6 1.24h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 9a16 16 0 0 0 6 6l1.06-1.06a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+              </span>
+            </div>
+          </div>
+
+          <!-- Password -->
+          <div class="form-group">
+            <label>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              Password <span class="req">*</span>
+            </label>
+            <div class="input-wrap">
+              <input
+                type="password"
+                name="password"
+                placeholder="Password"
+                required>
+              <span class="input-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              </span>
+              <button type="button" class="toggle-password" onclick="togglePassword('password', this)" aria-label="Show password">
+                <svg class="eye-open" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                <svg class="eye-closed" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/></svg>
+              </button>
+            </div>
+
+            <!-- Password Strength Meter -->
+            <div class="password-strength" id="passwordStrength">
+              <div class="strength-bar-bg">
+                <div class="strength-bar-fill" id="strengthBarFill"></div>
+              </div>
+              <div class="strength-label">
+                <span class="strength-text" id="strengthText">Enter a password</span>
+                <span class="strength-text" id="strengthPercent"></span>
+              </div>
+              <div class="strength-requirements">
+                <div class="strength-req" id="reqLength"><span class="req-dot"></span> 8+ characters</div>
+                <div class="strength-req" id="reqUpper"><span class="req-dot"></span> Uppercase letter</div>
+                <div class="strength-req" id="reqLower"><span class="req-dot"></span> Lowercase letter</div>
+                <div class="strength-req" id="reqNumber"><span class="req-dot"></span> Number</div>
+                <div class="strength-req" id="reqSpecial"><span class="req-dot"></span> Special character</div>
+                <div class="strength-req" id="reqLength12"><span class="req-dot"></span> 12+ characters</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Confirm Password -->
+          <div class="form-group">
+            <label>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              Confirm Password <span class="req">*</span>
+            </label>
+            <div class="input-wrap">
+              <input type="password" id="confirmPassword" placeholder="Re-enter your password" required oninput="checkPasswordMatch()">
+              <span class="input-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </span>
+              <button type="button" class="toggle-password" onclick="togglePassword('confirmPassword', this)" aria-label="Show password">
+                <svg class="eye-open" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                <svg class="eye-closed" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/></svg>
+              </button>
+            </div>
+            <div id="passwordMatchMsg" style="font-size:0.72rem;font-weight:600;margin-top:4px;min-height:16px;"></div>
+          </div>
+
+          <!-- Terms & Conditions -->
+          <label class="form-checkbox">
+            <input
+              type="checkbox"
+              id="termsCheckbox"
+              name="terms"
+              required>
+            <div class="checkbox-custom">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <span class="checkbox-label">
+              I agree to the <a href="#" onclick="event.preventDefault();alert('Terms & Conditions coming in Phase 2!');">Terms of Service</a> and <a href="#" onclick="event.preventDefault();alert('Privacy Policy coming in Phase 2!');">Privacy Policy</a>
+            </span>
+          </label>
+
+          <!-- Register Button -->
+          <button type="submit" class="register-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+            Create Account
+          </button>
+
+          <div class="form-divider"><span>or register with</span></div>
+
+          <!-- Social -->
+          <div class="social-login-btns">
+            <button type="button" class="social-btn-auth" onclick="alert('Google sign-up coming in Phase 2!')">
+              <svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18A10.96 10.96 0 0 0 1 12c0 1.78.43 3.46 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+              Google
+            </button>
+            <button type="button" class="social-btn-auth" onclick="alert('DigiLocker sign-up coming in Phase 2!')">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0F4C81" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+              DigiLocker
+            </button>
+          </div>
+
+          <p class="login-link">Already have an account? <a href="{{ url_for('login') }}">Login</a></p>
+
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="{{ url_for('home') }}" class="nav-logo">
+            <div class="nav-logo-icon" style="background:none;box-shadow:none;border-radius:50%;"><img src="../static/images/logo.jpg" alt="Logo" style="width:100%;height:100%;object-fit:cover;"></div>
+            <div class="nav-logo-text"><h1 style="color:#fff;">CyberCrimeAI</h1><span>AI-DRIVEN PROTECTION</span></div>
+          </a>
+          <p>An intelligent framework for secure cybercrime reporting and immediate victim assistance.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Pages</h4>
+          <div class="footer-links">
+            <a href="{{ url_for('report') }}" class="footer-link">Report Crime</a>
+            <a href="{{ url_for('chatbot') }}" class="footer-link">AI Chat</a>
+            <a href="{{ url_for('awareness') }}" class="footer-link">Awareness</a>
+            <a href="{{ url_for('emergency') }}" class="footer-link">Emergency</a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h4>Account</h4>
+          <div class="footer-links">
+            <a href="{{ url_for('login') }}" class="footer-link">Login</a>
+            <a href="{{ url_for('register') }}" class="footer-link">Register</a>
+            <a href="{{ url_for('dashboard') }}" class="footer-link">Dashboard</a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h4>Help</h4>
+          <div class="footer-links">
+            <a href="{{ url_for('emergency') }}" class="footer-link">Emergency: 1930</a>
+            <a href="#" class="footer-link">cybercrime.gov.in</a>
+            <a href="#" class="footer-link">Privacy Policy</a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 CyberCrimeAI Portal. All rights reserved.</p>
+        <p><a href="#">Privacy</a> | <a href="#">Terms</a></p>
+      </div>
+    </div>
+  </footer>
+  <button class="back-to-top" id="backToTop">↑</button>
+
+  <!-- INLINE JS -->
+  <script>
+    // ---- Password Strength Meter ----
+    function checkPasswordStrength(password) {
+      const bar = document.getElementById('strengthBarFill');
+      const text = document.getElementById('strengthText');
+      const percent = document.getElementById('strengthPercent');
+
+      const checks = {
+        length: password.length >= 8,
+        upper: /[A-Z]/.test(password),
+        lower: /[a-z]/.test(password),
+        number: /[0-9]/.test(password),
+        special: /[^A-Za-z0-9]/.test(password),
+        length12: password.length >= 12
+      };
+
+      // Update requirement indicators
+      document.getElementById('reqLength').classList.toggle('met', checks.length);
+      document.getElementById('reqUpper').classList.toggle('met', checks.upper);
+      document.getElementById('reqLower').classList.toggle('met', checks.lower);
+      document.getElementById('reqNumber').classList.toggle('met', checks.number);
+      document.getElementById('reqSpecial').classList.toggle('met', checks.special);
+      document.getElementById('reqLength12').classList.toggle('met', checks.length12);
+
+      // Calculate score (0-6)
+      let score = Object.values(checks).filter(Boolean).length;
+
+      if (password.length === 0) {
+        bar.style.width = '0%';
+        bar.style.background = 'transparent';
+        text.textContent = 'Enter a password';
+        text.style.color = 'var(--text-muted)';
+        percent.textContent = '';
+        return;
+      }
+
+      const levels = [
+        { max: 1, width: '10%',  bg: '#C62828', label: 'Very Weak',  color: '#C62828' },
+        { max: 2, width: '25%',  bg: '#E65100', label: 'Weak',       color: '#E65100' },
+        { max: 3, width: '45%',  bg: '#F9A825', label: 'Fair',       color: '#F9A825' },
+        { max: 4, width: '65%',  bg: '#FFB300', label: 'Good',       color: '#E65100' },
+        { max: 5, width: '82%',  bg: '#43A047', label: 'Strong',     color: '#2E7D32' },
+        { max: 6, width: '100%', bg: 'linear-gradient(90deg, #2E7D32, #1B5E20)', label: 'Excellent', color: '#1B5E20' }
+      ];
+
+      const level = levels[Math.min(score, levels.length) - 1];
+
+      bar.style.width = level.width;
+      bar.style.background = level.bg;
+      text.textContent = level.label;
+      text.style.color = level.color;
+      percent.textContent = Math.round((score / 6) * 100) + '%';
+      percent.style.color = level.color;
+
+      // Also check password match if confirm field has input
+      checkPasswordMatch();
+    }
+
+    // ---- Password Match Check ----
+    function checkPasswordMatch() {
+      const password = document.getElementById('password').value;
+      const confirm = document.getElementById('confirmPassword').value;
+      const msg = document.getElementById('passwordMatchMsg');
+
+      if (confirm.length === 0) {
+        msg.textContent = '';
+        return;
+      }
+
+      if (password === confirm) {
+        msg.textContent = 'Passwords match';
+        msg.style.color = 'var(--accent)';
+      } else {
+        msg.textContent = 'Passwords do not match';
+        msg.style.color = 'var(--danger)';
+      }
+    }
+
+    // ---- Toggle Password Visibility ----
+    function togglePassword(fieldId, btn) {
+      const field = document.getElementById(fieldId);
+      const eyeOpen = btn.querySelector('.eye-open');
+      const eyeClosed = btn.querySelector('.eye-closed');
+
+      if (field.type === 'password') {
+        field.type = 'text';
+        eyeOpen.style.display = 'none';
+        eyeClosed.style.display = 'block';
+      } else {
+        field.type = 'password';
+        eyeOpen.style.display = 'block';
+        eyeClosed.style.display = 'none';
+      }
+    }
+
+    // ---- Handle Registration ----
+    function handleRegister() {
+      const name = document.getElementById('fullName').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+      const password = document.getElementById('password').value;
+      const confirm = document.getElementById('confirmPassword').value;
+      const terms = document.getElementById('termsCheckbox').checked;
+
+      if (!name || !email || !phone || !password || !confirm) {
+        alert('Please fill in all required fields.');
+        return;
+      }
+
+      if (password !== confirm) {
+        alert('Passwords do not match. Please check and try again.');
+        return;
+      }
+
+      if (password.length < 8) {
+        alert('Password must be at least 8 characters long.');
+        return;
+      }
+
+      if (!terms) {
+        alert('Please accept the Terms of Service and Privacy Policy to continue.');
+        return;
+      }
+
+      alert('Registration coming in Phase 2!');
+    }
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Chat – CyberCrimeAI</title>
+  <meta name="description" content="Engage with CyberCrimeAI's chat interface. Describe cyber security incidents to receive immediate classification and safety block checklists.">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script defer src="{{ url_for('static', filename='js/main.js') }}"></script>
+  <style>
+    .chat-layout-wrapper {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 24px;
+      margin-top: 32px;
+      align-items: start;
+    }
+
+    .chat-sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      position: sticky;
+      top: 100px;
+    }
+
+    .sidebar-widget {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .sidebar-widget-title {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .sidebar-widget-title svg {
+      flex-shrink: 0;
+    }
+
+    /* ---- AI Status Widget ---- */
+    .status-pill {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      border-radius: var(--radius-md);
+      background: var(--surface-2);
+      border: 1.5px solid var(--border);
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      transition: var(--transition);
+    }
+
+    .status-pill .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--border);
+      flex-shrink: 0;
+      transition: var(--transition);
+    }
+
+    .status-pill.active .dot { background: var(--accent); animation: blink 1.4s infinite; }
+    .status-pill.active { color: var(--accent); border-color: rgba(46,125,50,0.3); background: rgba(46,125,50,0.05); }
+    .status-pill.classifying .dot { background: var(--primary); animation: blink 0.6s infinite; }
+    .status-pill.classifying { color: var(--primary); border-color: rgba(15,76,129,0.3); }
+
+    /* ---- Risk Meter ---- */
+    .risk-meter-wrap { display: none; }
+    .risk-score-big {
+      font-size: 2.4rem;
+      font-weight: 900;
+      text-align: center;
+      letter-spacing: -0.02em;
+      line-height: 1;
+      margin: 6px 0 4px;
+    }
+    .risk-label-sub {
+      font-size: 0.72rem;
+      text-align: center;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .risk-bar-bg {
+      height: 6px;
+      background: var(--surface-2);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+      margin-top: 12px;
+    }
+    .risk-bar-fill {
+      height: 100%;
+      border-radius: var(--radius-full);
+      background: linear-gradient(90deg, var(--accent), var(--danger));
+      width: 0;
+      transition: width 1s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    /* ---- Privacy Score Panel ---- */
+    .privacy-score-panel {
+      display: none;
+    }
+
+    .privacy-score-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .privacy-badge {
+      font-size: 0.7rem;
+      font-weight: 800;
+      padding: 3px 10px;
+      border-radius: var(--radius-full);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .privacy-badge.safe { background: rgba(46,125,50,0.1); color: var(--accent); }
+    .privacy-badge.warning { background: rgba(198,40,40,0.1); color: var(--danger); }
+
+    .privacy-check-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .privacy-check-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      padding: 7px 10px;
+      border-radius: var(--radius-sm);
+      background: var(--surface-2);
+      border: 1px solid var(--border-light);
+      transition: var(--transition-fast);
+    }
+
+    .privacy-check-item .check-icon {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 0.6rem;
+      font-weight: 900;
+    }
+
+    .privacy-check-item.cleared .check-icon {
+      background: var(--accent);
+      color: white;
+    }
+    .privacy-check-item.cleared {
+      color: var(--text-primary);
+    }
+
+    .privacy-check-item.detected .check-icon {
+      background: var(--danger);
+      color: white;
+    }
+    .privacy-check-item.detected {
+      color: var(--danger);
+      border-color: rgba(198,40,40,0.2);
+      background: rgba(198,40,40,0.03);
+    }
+
+    .privacy-footer-note {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      padding: 8px 10px;
+      background: rgba(46,125,50,0.05);
+      border: 1px solid rgba(46,125,50,0.15);
+      border-radius: var(--radius-sm);
+      text-align: center;
+      font-weight: 600;
+    }
+
+    /* ---- Suggestion Buttons ---- */
+    .suggestion-btn {
+      width: 100%;
+      text-align: left;
+      padding: 10px 12px;
+      background: var(--surface-2);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition-fast);
+      margin-bottom: 8px;
+      line-height: 1.4;
+    }
+
+    .suggestion-btn:last-child { margin-bottom: 0; }
+
+    .suggestion-btn:hover {
+      border-color: var(--primary);
+      background: rgba(15,76,129,0.04);
+      color: var(--primary);
+      transform: translateX(4px);
+    }
+
+    /* ---- Chat Panel ---- */
+    .chat-main-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      min-height: 620px;
+    }
+
+    .chat-panel-header {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface-2);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .chat-panel-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .chat-ai-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--primary), #1a6bb5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .online-badge {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--accent);
+      background: rgba(46,125,50,0.08);
+      padding: 3px 10px;
+      border-radius: var(--radius-full);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .online-badge::before {
+      content: '';
+      width: 6px; height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: blink 1.4s infinite;
+    }
+
+    /* ---- Chat Feed ---- */
+    .chat-feed-container {
+      flex-grow: 1;
+      overflow-y: auto;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      background: #F7F9FC;
+      min-height: 400px;
+    }
+
+    .chat-msg {
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+      max-width: 85%;
+    }
+
+    .chat-msg.ai { flex-direction: row; align-self: flex-start; }
+    .chat-msg.user { flex-direction: row-reverse; align-self: flex-end; }
+
+    .chat-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.68rem;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    .chat-msg.ai .chat-avatar { background: var(--primary); color: white; }
+    .chat-msg.user .chat-avatar { background: var(--accent); color: white; }
+
+    .chat-bubble {
+      padding: 12px 16px;
+      border-radius: 16px;
+      font-size: 0.88rem;
+      line-height: 1.6;
+      font-weight: 500;
+    }
+
+    .chat-msg.ai .chat-bubble {
+      background: white;
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+      border-bottom-left-radius: 4px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+
+    .chat-msg.user .chat-bubble {
+      background: var(--primary);
+      color: white;
+      border-bottom-right-radius: 4px;
+    }
+
+    /* ---- Chat Input ---- */
+    .chat-input-section {
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    /* Privacy indicator bar above input */
+    .privacy-input-bar {
+      display: none;
+      padding: 10px 20px;
+      background: rgba(198,40,40,0.04);
+      border-top: 1px solid rgba(198,40,40,0.15);
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--danger);
+      gap: 6px;
+      align-items: center;
+    }
+
+    .privacy-input-bar.show { display: flex; }
+
+    .chat-input-bar {
+      padding: 16px 20px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .chat-input-field {
+      flex-grow: 1;
+      padding: 13px 18px;
+      border-radius: var(--radius-md);
+      border: 1.5px solid var(--border);
+      font-family: inherit;
+      font-size: 0.9rem;
+      outline: none;
+      background: var(--surface-2);
+      transition: var(--transition-fast);
+      color: var(--text-primary);
+    }
+
+    .chat-input-field:focus {
+      border-color: var(--primary);
+      background: white;
+      box-shadow: 0 0 0 3px rgba(15,76,129,0.08);
+    }
+
+    .btn-send {
+      padding: 13px 22px;
+      border-radius: var(--radius-md);
+      background: var(--primary);
+      color: white;
+      font-weight: 700;
+      font-size: 0.88rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: var(--transition-fast);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .btn-send:hover {
+      background: #0d3f6b;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(15,76,129,0.3);
+    }
+
+    .chat-hint {
+      padding: 0 20px 14px;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    @media (max-width: 900px) {
+      .chat-layout-wrapper {
+        grid-template-columns: 1fr;
+      }
+      .chat-sidebar { position: static; }
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <div class="nav-logo-wrap">
+        <a href="{{ url_for('home') }}" class="nav-logo">
+          <div class="nav-logo-icon" style="background:none;box-shadow:none;border-radius:50%;">
+            <img src="../static/images/logo.jpg" alt="Logo" style="width:100%;height:100%;object-fit:cover;">
+          </div>
+          <div class="nav-logo-text"><h1>CyberCrimeAI</h1><span>SECURE PORTAL</span></div>
+        </a>
+        <div class="nav-divider"></div>
+      </div>
+      <div class="nav-links">
+        <a href="{{ url_for('home') }}" class="nav-link">Home</a>
+        <a href="{{ url_for('report') }}" class="nav-link">Report Crime</a>
+        <a href="{{ url_for('chatbot') }}" class="nav-link active">AI Chat</a>
+        <a href="{{ url_for('awareness') }}" class="nav-link">Awareness</a>
+        <a href="{{ url_for('emergency') }}" class="nav-link">Emergency</a>
+        <a href="{{ url_for('dashboard') }}" class="nav-link">Dashboard</a>
+      </div>
+      <div class="nav-actions">
+        <a href="{{ url_for('emergency') }}" class="nav-emergency"><div class="pulse-dot"></div>1930</a>
+        <a href="{{ url_for('login') }}" class="nav-btn-login">Login</a>
+        <a href="{{ url_for('register') }}" class="nav-btn-register">Register</a>
+      </div>
+      <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
+    </div>
+  </nav>
+
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="{{ url_for('home') }}" class="nav-link">Home</a>
+    <a href="{{ url_for('report') }}" class="nav-link">Report Crime</a>
+    <a href="{{ url_for('chatbot') }}" class="nav-link active">AI Chat</a>
+    <a href="{{ url_for('awareness') }}" class="nav-link">Awareness</a>
+    <a href="{{ url_for('emergency') }}" class="nav-link">Emergency</a>
+    <a href="{{ url_for('dashboard') }}" class="nav-link">Dashboard</a>
+    <div class="nav-actions" style="flex-direction:column;gap:8px;">
+      <a href="{{ url_for('login') }}" class="btn btn-outline" style="text-align:center;">Login</a>
+      <a href="{{ url_for('register') }}" class="btn btn-primary" style="text-align:center;">Register</a>
+    </div>
+  </div>
+
+  <!-- ================= MAIN CONTAINER ================= -->
+  <main class="container" style="padding: 108px 24px 60px;">
+
+    <div class="chat-layout-wrapper">
+
+      <!-- ===== LEFT SIDEBAR ===== -->
+      <aside class="chat-sidebar">
+
+        <!-- AI Status -->
+        <div class="sidebar-widget">
+          <div class="sidebar-widget-title">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>
+            AI Engine Status
+          </div>
+          <div class="status-pill" id="statusPill">
+            <div class="dot"></div>
+            <span id="statusText">Listening for input...</span>
+          </div>
+        </div>
+
+        <!-- Risk Meter -->
+        <div class="sidebar-widget risk-meter-wrap" id="riskMeterWrap">
+          <div class="sidebar-widget-title">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Risk Assessment
+          </div>
+          <div class="risk-score-big" id="riskScoreVal" style="color: var(--danger);">—</div>
+          <div class="risk-label-sub" id="riskLabelSub">Threat Level</div>
+          <div class="risk-bar-bg">
+            <div class="risk-bar-fill" id="riskBarFill"></div>
+          </div>
+        </div>
+
+        <!-- ★ Privacy Score Panel -->
+        <div class="sidebar-widget privacy-score-panel" id="privacyScorePanel">
+          <div class="privacy-score-header">
+            <div class="sidebar-widget-title" style="margin-bottom:0;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              Privacy Check
+            </div>
+            <span class="privacy-badge safe" id="privacyBadge">Safe</span>
+          </div>
+
+          <div class="privacy-check-list" id="privacyCheckList">
+            <div class="privacy-check-item cleared" data-key="phone">
+              <div class="check-icon">✓</div>
+              Phone Number Removed
+            </div>
+            <div class="privacy-check-item cleared" data-key="aadhaar">
+              <div class="check-icon">✓</div>
+              Aadhaar Number Removed
+            </div>
+            <div class="privacy-check-item cleared" data-key="pan">
+              <div class="check-icon">✓</div>
+              PAN Card Removed
+            </div>
+            <div class="privacy-check-item cleared" data-key="bank">
+              <div class="check-icon">✓</div>
+              Bank Account Removed
+            </div>
+            <div class="privacy-check-item cleared" data-key="email">
+              <div class="check-icon">✓</div>
+              Email Address Removed
+            </div>
+            <div class="privacy-check-item cleared" data-key="otp">
+              <div class="check-icon">✓</div>
+              OTP / PIN Removed
+            </div>
+          </div>
+
+          <div class="privacy-footer-note" id="privacyFooterNote">
+            ✅ Safe to send to AI
+          </div>
+        </div>
+
+        <!-- Suggestions -->
+        <div class="sidebar-widget">
+          <div class="sidebar-widget-title">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            Quick Scenarios
+          </div>
+          <button class="suggestion-btn" onclick="triggerPreset('My Instagram account got hacked and someone changed my password.')">
+            My Instagram was hacked
+          </button>
+          <button class="suggestion-btn" onclick="triggerPreset('Someone called me pretending to be my bank and asked for my credit card details.')">
+            Received fake bank call
+          </button>
+          <button class="suggestion-btn" onclick="triggerPreset('I paid money for a job opportunity online and they blocked me after payment.')">
+            Paid for fake job offer
+          </button>
+          <button class="suggestion-btn" onclick="triggerPreset('I received a message saying I won a lottery and they asked for my personal details.')">
+            Lottery prize scam message
+          </button>
+        </div>
+
+      </aside>
+
+      <!-- ===== CHAT MAIN PANEL ===== -->
+      <section class="chat-main-panel">
+
+        <!-- Header -->
+        <div class="chat-panel-header">
+          <div class="chat-panel-title">
+            <div class="chat-ai-avatar">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="4" y="4" width="16" height="16" rx="2"/>
+                <rect x="9" y="9" width="6" height="6"/>
+                <line x1="9" y1="1" x2="9" y2="4"/>
+                <line x1="15" y1="1" x2="15" y2="4"/>
+                <line x1="9" y1="20" x2="9" y2="23"/>
+                <line x1="15" y1="20" x2="15" y2="23"/>
+                <line x1="20" y1="9" x2="23" y2="9"/>
+                <line x1="20" y1="15" x2="23" y2="15"/>
+                <line x1="1" y1="9" x2="4" y2="9"/>
+                <line x1="1" y1="15" x2="4" y2="15"/>
+              </svg>
+            </div>
+            <div>
+              <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary);">Cyber AI Assistant</h3>
+              <p style="font-size: 0.72rem; color: var(--text-muted); font-weight: 500; margin-top: 1px;">Gemini Threat Classification Engine</p>
+            </div>
+          </div>
+          <span class="online-badge">Online</span>
+        </div>
+
+        <!-- Feed -->
+        <div class="chat-feed-container" id="chatbotFeed">
+          <div class="chat-msg ai">
+            <div class="chat-avatar">AI</div>
+            <div class="chat-bubble">
+              Hello! I am your Cyber Security Assistant.<br><br>
+              Please <strong>describe the incident</strong> you experienced in plain words. I will classify the threat, assess the risk level, and provide immediate guidance.<br><br>
+              <em style="font-size:0.82rem; color: #888;">Your data is scanned for privacy before being sent to AI.</em>
+            </div>
+          </div>
+        </div>
+
+        <!-- Input Section -->
+        <div class="chat-input-section">
+
+          <!-- Warning bar (shown when PII detected in live typing) -->
+          <div class="privacy-input-bar" id="privacyInputBar">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <span id="privacyWarningText">Sensitive information detected — will be removed before sending to AI</span>
+          </div>
+
+          <div class="chat-input-bar">
+            <input type="text" id="chatbotInput" class="chat-input-field" placeholder="Describe what happened in detail...">
+            <button class="btn-send" id="btnSendChat">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              Send
+            </button>
+          </div>
+          <div class="chat-hint">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            PII is automatically redacted before reaching the AI engine
+          </div>
+        </div>
+
+      </section>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="{{ url_for('home') }}" class="nav-logo">
+            <div class="nav-logo-icon" style="background:none;box-shadow:none;border-radius:50%;"><img src="../static/images/logo.jpg" alt="Logo" style="width:100%;height:100%;object-fit:cover;"></div>
+            <div class="nav-logo-text"><h1 style="color:#fff;">CyberCrimeAI</h1><span>AI-DRIVEN PROTECTION</span></div>
+          </a>
+          <p>An intelligent framework for secure cybercrime reporting and immediate victim assistance.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Pages</h4>
+          <div class="footer-links">
+            <a href="{{ url_for('report') }}" class="footer-link">Report Crime</a>
+            <a href="{{ url_for('chatbot') }}" class="footer-link">AI Chat</a>
+            <a href="{{ url_for('awareness') }}" class="footer-link">Awareness</a>
+            <a href="{{ url_for('emergency') }}" class="footer-link">Emergency</a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h4>Account</h4>
+          <div class="footer-links">
+            <a href="{{ url_for('login') }}" class="footer-link">Login</a>
+            <a href="{{ url_for('register') }}" class="footer-link">Register</a>
+            <a href="{{ url_for('dashboard') }}" class="footer-link">Dashboard</a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h4>Help</h4>
+          <div class="footer-links">
+            <a href="{{ url_for('emergency') }}" class="footer-link">Emergency: 1930</a>
+            <a href="#" class="footer-link">cybercrime.gov.in</a>
+            <a href="#" class="footer-link">Privacy Policy</a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 CyberCrimeAI Portal. All rights reserved.</p>
+        <p><a href="#">Privacy</a> | <a href="#">Terms</a></p>
+      </div>
+    </div>
+  </footer>
+
+  <button class="back-to-top" id="backToTop">↑</button>
+
+  <!-- ================= CHATBOT SCRIPT ================= -->
+  <script>
+    /* ── DOM refs ── */
+    const feed         = document.getElementById('chatbotFeed');
+    const input        = document.getElementById('chatbotInput');
+    const sendBtn      = document.getElementById('btnSendChat');
+    const statusPill   = document.getElementById('statusPill');
+    const statusText   = document.getElementById('statusText');
+    const riskWrap     = document.getElementById('riskMeterWrap');
+    const riskVal      = document.getElementById('riskScoreVal');
+    const riskSub      = document.getElementById('riskLabelSub');
+    const riskBar      = document.getElementById('riskBarFill');
+    const privacyPanel = document.getElementById('privacyScorePanel');
+    const privacyBadge = document.getElementById('privacyBadge');
+    const privacyNote  = document.getElementById('privacyFooterNote');
+    const inputBar     = document.getElementById('privacyInputBar');
+    const warnText     = document.getElementById('privacyWarningText');
+
+    /* ── PII detection patterns ── */
+    const PII_PATTERNS = {
+      phone:   /\b[6-9]\d{9}\b/,
+      aadhaar: /\b\d{4}[\s-]?\d{4}[\s-]?\d{4}\b/,
+      pan:     /\b[A-Z]{5}[0-9]{4}[A-Z]\b/,
+      bank:    /\b\d{9,18}\b/,
+      email:   /\b[\w.+-]+@[\w-]+\.[a-zA-Z]{2,}\b/,
+      otp:     /\b\d{4,8}\b/
+    };
+
+    /* ── Live PII scan on typing ── */
+    input.addEventListener('input', () => {
+      const txt = input.value;
+      if (!txt.trim()) {
+        inputBar.classList.remove('show');
+        privacyPanel.style.display = 'none';
+        return;
+      }
+
+      const detected = [];
+      for (const [key, pattern] of Object.entries(PII_PATTERNS)) {
+        if (pattern.test(txt)) detected.push(key);
+      }
+
+      updatePrivacyPanel(detected);
+
+      if (detected.length > 0) {
+        inputBar.classList.add('show');
+        warnText.textContent = `Detected: ${detected.map(k => k.toUpperCase()).join(', ')} — will be removed before sending to AI`;
+      } else {
+        inputBar.classList.remove('show');
+      }
+    });
+
+    /* ── Update the sidebar Privacy Score panel ── */
+    function updatePrivacyPanel(detectedKeys) {
+      privacyPanel.style.display = 'block';
+
+      const items = privacyPanel.querySelectorAll('.privacy-check-item');
+      let hasIssue = false;
+
+      items.forEach(item => {
+        const key = item.dataset.key;
+        if (detectedKeys.includes(key)) {
+          item.className = 'privacy-check-item detected';
+          item.querySelector('.check-icon').textContent = '✕';
+          hasIssue = true;
+        } else {
+          item.className = 'privacy-check-item cleared';
+          item.querySelector('.check-icon').textContent = '✓';
+        }
+      });
+
+      if (hasIssue) {
+        privacyBadge.className = 'privacy-badge warning';
+        privacyBadge.textContent = 'PII Found';
+        privacyNote.style.background = 'rgba(198,40,40,0.06)';
+        privacyNote.style.borderColor = 'rgba(198,40,40,0.2)';
+        privacyNote.style.color = 'var(--danger)';
+        privacyNote.textContent = '⚠ Will be redacted before AI processing';
+      } else {
+        privacyBadge.className = 'privacy-badge safe';
+        privacyBadge.textContent = 'Safe';
+        privacyNote.style.background = 'rgba(46,125,50,0.05)';
+        privacyNote.style.borderColor = 'rgba(46,125,50,0.15)';
+        privacyNote.style.color = 'var(--accent)';
+        privacyNote.textContent = '✅ Safe to send to AI';
+      }
+    }
+
+    /* ── Redact PII from text before processing ── */
+    function redactPII(txt) {
+      let clean = txt;
+      clean = clean.replace(PII_PATTERNS.phone, '[PHONE REMOVED]');
+      clean = clean.replace(PII_PATTERNS.aadhaar, '[AADHAAR REMOVED]');
+      clean = clean.replace(PII_PATTERNS.pan, '[PAN REMOVED]');
+      clean = clean.replace(PII_PATTERNS.bank, '[BANK ACCOUNT REMOVED]');
+      clean = clean.replace(PII_PATTERNS.email, '[EMAIL REMOVED]');
+      clean = clean.replace(PII_PATTERNS.otp, '[OTP REMOVED]');
+      return clean;
+    }
+
+    /* ── Append chat message ── */
+    function appendMessage(sender, html) {
+      const div = document.createElement('div');
+      div.className = `chat-msg ${sender}`;
+      div.innerHTML = `
+        <div class="chat-avatar">${sender === 'user' ? 'U' : 'AI'}</div>
+        <div class="chat-bubble">${html}</div>
+      `;
+      feed.appendChild(div);
+      feed.scrollTop = feed.scrollHeight;
+    }
+
+    /* ── Status pill update ── */
+    function setStatus(state, text) {
+      statusPill.className = `status-pill ${state}`;
+      statusText.textContent = text;
+    }
+
+    /* ── Simulate AI classification ── */
+    function processReply(rawText) {
+      const cleanText = redactPII(rawText);
+
+      setStatus('classifying', 'Classifying threat...');
+
+      setTimeout(() => {
+        let reply = '';
+        let label = '';
+        let score = 0;
+
+        const t = cleanText.toLowerCase();
+
+        if (t.includes('instagram') || t.includes('facebook') || t.includes('hack') || t.includes('social')) {
+          label = 'Social Media Hacking';
+          score = 88;
+          reply = 'I classified this as <strong>Social Media Hacking</strong>.<br><br><strong>Immediate Actions:</strong><br>① Reset all associated recovery email/phone passwords<br>② Enable Two-Factor Authentication (2FA) immediately<br>③ Go to Settings → Active Sessions → Log out all devices<br>④ Report account compromise to the platform directly';
+        } else if (t.includes('bank') || t.includes('card') || t.includes('upi') || t.includes('transaction') || t.includes('money') || t.includes('transfer')) {
+          label = 'Banking / UPI Fraud';
+          score = 95;
+          reply = 'I classified this as <strong>Banking / UPI Fraud</strong>.<br><br><strong>Immediate Actions:</strong><br>① Call your bank\'s 24x7 helpline and request a freeze<br>② Dial <strong>1930</strong> (National Cyber Helpline) within the hour<br>③ File complaint at <strong>cybercrime.gov.in</strong><br>④ Note the transaction UTR/reference number as evidence';
+        } else if (t.includes('job') || t.includes('salary') || t.includes('work from home') || t.includes('recruitment')) {
+          label = 'Job / Employment Scam';
+          score = 78;
+          reply = 'I classified this as a <strong>Job / Employment Scam</strong>.<br><br><strong>Immediate Actions:</strong><br>① Do not make any further payments<br>② Save all chat screenshots, payment receipts and caller IDs<br>③ Verify recruiter identity on LinkedIn<br>④ Report the incident at cybercrime.gov.in';
+        } else if (t.includes('lottery') || t.includes('prize') || t.includes('won') || t.includes('reward')) {
+          label = 'Lottery / Prize Scam';
+          score = 62;
+          reply = 'I classified this as a <strong>Lottery / Prize Scam</strong>.<br><br><strong>Key fact:</strong> Legitimate lotteries never ask for upfront fees or personal data.<br><br><strong>Actions:</strong><br>① Block the sender immediately<br>② Do not share Aadhaar, PAN or bank details<br>③ Report to your local cyber police station';
+        } else {
+          label = 'Phishing / General Online Scam';
+          score = 65;
+          reply = 'I classified this as a <strong>Phishing / General Online Scam</strong>.<br><br><strong>Actions:</strong><br>① Preserve all digital evidence (screenshots, URLs, numbers)<br>② Change passwords on any accounts that may be compromised<br>③ File a formal complaint at <strong>cybercrime.gov.in</strong> with evidence attached';
+        }
+
+        // Update status
+        setStatus('active', `Classified: ${label}`);
+
+        // Update risk meter
+        riskWrap.style.display = 'block';
+        riskVal.textContent = `${score}%`;
+        riskSub.textContent = score >= 85 ? 'Critical Threat' : score >= 65 ? 'High Severity' : 'Moderate Threat';
+        riskVal.style.color = score >= 85 ? 'var(--danger)' : score >= 65 ? '#E65100' : 'var(--accent)';
+        setTimeout(() => { riskBar.style.width = score + '%'; }, 100);
+
+        appendMessage('ai', reply);
+      }, 1500);
+    }
+
+    /* ── Handle send ── */
+    function handleSend() {
+      const txt = input.value.trim();
+      if (!txt) return;
+
+      appendMessage('user', txt);
+      input.value = '';
+      inputBar.classList.remove('show');
+      privacyPanel.style.display = 'none';
+
+      processReply(txt);
+    }
+
+    const triggerPreset = (text) => {
+      input.value = text;
+      input.dispatchEvent(new Event('input')); // trigger privacy scan
+      setTimeout(handleSend, 200);
+    };
+
+    sendBtn.addEventListener('click', handleSend);
+    input.addEventListener('keypress', e => { if (e.key === 'Enter') handleSend(); });
+  </script>
+
+</body>
+</html>

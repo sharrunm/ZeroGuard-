@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CyberCrimeAI – AI-Powered Cybercrime Reporting Portal</title>
+  <meta name="description" content="Report cybercrime incidents securely using AI-powered classification, evidence upload, and instant legal guidance.">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  <style>
+    .home-quick-actions {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      margin-top: 56px;
+    }
+    .quick-action-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 32px 24px;
+      text-align: center;
+      text-decoration: none;
+      transition: var(--transition);
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      position: relative;
+      overflow: hidden;
+    }
+    .quick-action-card::before {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--gradient-primary);
+      transform: scaleX(0);
+      transition: transform 0.3s ease;
+    }
+    .quick-action-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); }
+    .quick-action-card:hover::before { transform: scaleX(1); }
+    .qa-icon {
+      width: 56px; height: 56px;
+      border-radius: var(--radius-md);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .qa-title { font-family: var(--font-display); font-size: 1rem; font-weight: 700; color: var(--text-primary); }
+    .qa-desc { font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; }
+
+    .alert-banner {
+      background: linear-gradient(135deg, #C62828, #B71C1C);
+      color: white;
+      padding: 14px 0;
+      text-align: center;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+    .alert-banner a { color: #FFD54F; text-decoration: underline; }
+
+    .trust-bar {
+      display: flex; align-items: center; justify-content: center;
+      gap: 40px;
+      padding: 28px 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+    .trust-item {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 0.82rem; font-weight: 700; color: var(--text-secondary);
+    }
+    .trust-item svg { color: var(--accent); }
+
+    @media (max-width: 900px) { .home-quick-actions { grid-template-columns: repeat(2,1fr); } }
+    @media (max-width: 500px) { .home-quick-actions { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+  <!-- Alert Banner -->
+  <div class="alert-banner">
+    🚨 Cyber Emergency? Call <strong>1930</strong> immediately &nbsp;|&nbsp;
+    <a href="emergency.html">View all helplines →</a>
+  </div>
+
+  <!-- NAV -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <div class="nav-logo-wrap">
+        <a href="{{ url_for('home') }}" class="nav-logo">
+          <div class="nav-logo-icon" style="background:none;box-shadow:none;border-radius:50%;">
+            <img src="../static/images/logo.jpg" alt="Logo" style="width:100%;height:100%;object-fit:cover;">
+          </div>
+          <div class="nav-logo-text"><h1>CyberCrimeAI</h1><span>SECURE PORTAL</span></div>
+        </a>
+        <div class="nav-divider"></div>
+      </div>
+      <div class="nav-links">
+        <a href="{{ url_for('home') }}" class="nav-link active">Home</a>
+        <a href="{{ url_for('report') }}" class="nav-link">Report Crime</a>
+        <a href="{{ url_for('chatbot') }}" class="nav-link">AI Chat</a>
+        <a href="{{ url_for('awareness') }}" class="nav-link">Awareness</a>
+        <a href="{{ url_for('emergency') }}" class="nav-link">Emergency</a>
+        <a href="{{ url_for('dashboard') }}" class="nav-link">Dashboard</a>
+      </div>
+      <div class="nav-actions">
+        <a href="emergency.html" class="nav-emergency"><div class="pulse-dot"></div>1930</a>
+        <a href="{{ url_for('login') }}" class="nav-btn-login">Login</a>
+        <a href="{{ url_for('register') }}" class="nav-btn-register">Register</a>
+      </div>
+      <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
+    </div>
+  </nav>
+
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="{{ url_for('home') }}">Home</a>
+    <a href="{{ url_for('report') }}" class="nav-link">Report Crime</a>
+    <a href="{{ url_for('chatbot') }}" class="nav-link">AI Chat</a>
+    <a href="{{ url_for('awareness') }}" class="nav-link">Awareness</a>
+    <a href="{{ url_for('emergency') }}" class="nav-link">Emergency</a>
+    <a href="{{ url_for('dashboard') }}" class="nav-link">Dashboard</a>
+    <div class="nav-actions" style="flex-direction:column;gap:8px;">
+      <a href="{{ url_for('login') }}" class="btn btn-outline" style="text-align:center;">Login</a>
+      <a href="{{ url_for('register') }}" class="btn btn-primary" style="text-align:center;">Register</a>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <header class="hero">
+    <div class="hero-grid"></div>
+    <div class="hero-orb hero-orb-1"></div>
+    <div class="hero-orb hero-orb-2"></div>
+    <div class="hero-content">
+      <div class="hero-left animate-fade-up">
+        <div class="hero-badge">AI-POWERED CYBER PROTECTION</div>
+        <h2 class="hero-title">Report Cybercrime<br>with <span>Smart AI</span></h2>
+        <p class="hero-desc">Describe your incident in plain words. Our AI classifies the threat, guides you step-by-step, and generates a legal-grade complaint document — all in minutes.</p>
+        <div class="hero-cta">
+         <a href="{{ url_for('report') }}">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            Report an Incident
+          </a>
+         <a href="{{ url_for('chatbot') }}">Talk to AI Assistant</a>
+        </div>
+        <div style="display:flex;align-items:center;gap:20px;margin-top:28px;flex-wrap:wrap;">
+          <div style="display:flex;align-items:center;gap:6px;font-size:0.8rem;color:rgba(255,255,255,0.7);font-weight:600;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4CAF50" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Free & Secure
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:0.8rem;color:rgba(255,255,255,0.7);font-weight:600;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4CAF50" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> PII Auto-Redacted
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:0.8rem;color:rgba(255,255,255,0.7);font-weight:600;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4CAF50" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Generates Legal PDF
+          </div>
+        </div>
+      </div>
+      <div class="hero-right animate-scale-in">
+        <div class="hero-visual">
+          <div class="hero-card-main" style="padding:28px;">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+              <div style="width:38px;height:38px;background:rgba(46,125,50,0.15);border-radius:8px;display:flex;align-items:center;justify-content:center;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4CAF50" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              </div>
+              <div>
+                <div style="font-size:0.85rem;font-weight:700;color:#fff;">AI Classification Result</div>
+                <div style="font-size:0.7rem;color:rgba(255,255,255,0.5);">Incident #CR-2026-0847</div>
+              </div>
+              <span style="margin-left:auto;font-size:0.68rem;background:rgba(198,40,40,0.2);color:#EF5350;padding:3px 10px;border-radius:20px;font-weight:700;">HIGH RISK</span>
+            </div>
+            <div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:16px;margin-bottom:16px;">
+              <div style="font-size:0.7rem;color:rgba(255,255,255,0.5);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em;">Detected Category</div>
+              <div style="font-size:1rem;font-weight:700;color:#fff;">Banking / UPI Fraud</div>
+              <div style="height:4px;background:rgba(255,255,255,0.1);border-radius:4px;margin-top:10px;overflow:hidden;">
+                <div style="height:100%;width:92%;background:linear-gradient(90deg,#2E7D32,#EF5350);border-radius:4px;"></div>
+              </div>
+              <div style="font-size:0.7rem;color:rgba(255,255,255,0.5);margin-top:4px;">Risk Score: 92%</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <div style="display:flex;align-items:center;gap:8px;font-size:0.78rem;color:rgba(255,255,255,0.7);">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#4CAF50" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                Privacy scan: All PII removed
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:0.78rem;color:rgba(255,255,255,0.7);">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#4CAF50" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                Legal PDF complaint ready
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:0.78rem;color:rgba(255,255,255,0.7);">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#4CAF50" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                Guidance: Freeze bank account now
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- TRUST BAR -->
+  <div class="trust-bar" style="background:var(--surface);">
+    <div class="trust-item">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2E7D32" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      End-to-End Encrypted
+    </div>
+    <div class="trust-item">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2E7D32" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      Zero Permanent Storage
+    </div>
+    <div class="trust-item">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2E7D32" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      &lt; 3 Min Resolution Guidance
+    </div>
+    <div class="trust-item">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2E7D32" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      Legal-Grade PDF Output
+    </div>
+    <div class="trust-item">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2E7D32" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      15 Crime Categories
+    </div>
+  </div>
+
+  <!-- QUICK ACTIONS -->
+  <section style="background:var(--background);padding:72px 0;">
+    <div class="container">
+      <div class="features-header">
+        <div class="section-tag">GET STARTED</div>
+        <h2 class="section-title">What do you <span>need today?</span></h2>
+      </div>
+      <div class="home-quick-actions">
+        <a href="report.html" class="quick-action-card">
+          <div class="qa-icon" style="background:rgba(198,40,40,0.08);">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#C62828" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </div>
+          <div class="qa-title">Report an Incident</div>
+          <div class="qa-desc">File a structured complaint with AI assistance and get a legal PDF</div>
+        </a>
+        <a href="chatbot.html" class="quick-action-card">
+          <div class="qa-icon" style="background:rgba(15,76,129,0.08);">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0F4C81" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <div class="qa-title">Chat with AI</div>
+          <div class="qa-desc">Describe your problem and get instant threat classification</div>
+        </a>
+        <a href="awareness.html" class="quick-action-card">
+          <div class="qa-icon" style="background:rgba(46,125,50,0.08);">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#2E7D32" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          </div>
+          <div class="qa-title">Safety Awareness</div>
+          <div class="qa-desc">Learn to identify scams and protect yourself from cyber threats</div>
+        </a>
+        <a href="emergency.html" class="quick-action-card">
+          <div class="qa-icon" style="background:rgba(230,81,0,0.08);">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#E65100" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.63 3.42 2 2 0 0 1 3.6 1.24h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 9a16 16 0 0 0 6 6l1.06-1.06a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          </div>
+          <div class="qa-title">Emergency Helplines</div>
+          <div class="qa-desc">Access 1930 and all national cyber security emergency contacts</div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="features-section" id="services">
+    <div class="container">
+      <div class="features-header">
+        <div class="section-tag">HOW IT WORKS</div>
+        <h2 class="section-title">From Incident to <span>Legal Complaint</span></h2>
+        <p class="section-subtitle">Our AI pipeline takes you from describing an incident to filing a structured legal complaint in under 5 minutes.</p>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon-wrap icon-bg-blue">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0F4C81" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <h3 class="feature-title">Describe in Plain Words</h3>
+          <p class="feature-desc">No legal jargon needed. Just tell the AI what happened. It understands everyday language and extracts all relevant details.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon-wrap icon-bg-green">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2E7D32" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </div>
+          <h3 class="feature-title">AI Classifies Threat</h3>
+          <p class="feature-desc">Gemini AI instantly identifies the crime category from 15 types — phishing, UPI fraud, hacking, sextortion, and more.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon-wrap icon-bg-teal">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00796B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </div>
+          <h3 class="feature-title">Privacy Protection</h3>
+          <p class="feature-desc">Phone numbers, Aadhaar, bank accounts, and emails are automatically redacted before the AI processes your complaint.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon-wrap icon-bg-purple">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#673AB7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          </div>
+          <h3 class="feature-title">Legal PDF Generated</h3>
+          <p class="feature-desc">Download a professionally formatted complaint document ready to submit to cybercrime.gov.in or your local cyber police.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon-wrap icon-bg-orange">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#E65100" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><line x1="9" y1="18" x2="15" y2="18"/><line x1="10" y1="22" x2="14" y2="22"/></svg>
+          </div>
+          <h3 class="feature-title">Instant Guidance</h3>
+          <p class="feature-desc">Get step-by-step actions: freeze your bank account, change passwords, enable 2FA, and who to call right now.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon-wrap icon-bg-red">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C62828" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="9" y1="9" x2="21" y2="9"/><line x1="9" y1="15" x2="21" y2="15"/></svg>
+          </div>
+          <h3 class="feature-title">Track Your Case</h3>
+          <p class="feature-desc">Log in to your dashboard to view complaint history, status updates, and access previously generated documents anytime.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="{{ url_for('home') }}" class="nav-logo">
+            <div class="nav-logo-icon" style="background:none;box-shadow:none;border-radius:50%;"><img src="../static/images/logo.jpg" alt="Logo" style="width:100%;height:100%;object-fit:cover;"></div>
+            <div class="nav-logo-text"><h1 style="color:#fff;">CyberCrimeAI</h1><span>AI-DRIVEN PROTECTION</span></div>
+          </a>
+          <p>An intelligent framework designed to facilitate secure, rapid cybercrime reporting and immediate victim assistance.</p>
+          <div class="footer-social"><span class="social-btn">🐦</span><span class="social-btn">📘</span><span class="social-btn">📸</span><span class="social-btn">💼</span></div>
+        </div>
+        <div class="footer-col">
+          <h4>Pages</h4>
+          <div class="footer-links">
+            <a href="{{ url_for('report') }}" class="footer-link">Report Crime</a>
+            <a href="{{ url_for('chatbot') }}" class="footer-link">AI Chat</a>
+            <a href="{{ url_for('awareness') }}" class="footer-link">Awareness</a>
+            <a href="{{ url_for('emergency') }}" class="footer-link">Emergency</a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h4>Account</h4>
+          <div class="footer-links">
+            <a href="{{ url_for('login') }}" class="footer-link">Login</a>
+            <a href="{{ url_for('register') }}" class="footer-link">Register</a>
+            <a href="{{ url_for('dashboard') }}" class="footer-link">Dashboard</a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h4>Help</h4>
+          <div class="footer-links">
+            <a href="{{ url_for('emergency') }}" class="footer-link">Emergency: 1930</a>
+            <a href="#" class="footer-link">cybercrime.gov.in</a>
+            <a href="#" class="footer-link">Privacy Policy</a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 CyberCrimeAI Portal. All rights reserved.</p>
+        <p><a href="#">Privacy</a> | <a href="#">Terms</a></p>
+      </div>
+    </div>
+  </footer>
+  <button class="back-to-top" id="backToTop">↑</button>
+</body>
+</html>
