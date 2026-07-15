@@ -1,7 +1,10 @@
 from flask import Flask, render_template, request , redirect, session
 from werkzeug.security import generate_password_hash, check_password_hash
 from config import Config
+from ai.prompts import CRIME_CATEGORIES
 from database.models import db, User, Complaint
+from ai.guidance import get_guidance
+from ai.questions import get_questions
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
@@ -78,6 +81,7 @@ def register():
 
     return render_template("register.html")
 @app.route("/report", methods=["GET", "POST"])
+
 def report():
 
     if "user_id" not in session:
@@ -115,6 +119,24 @@ def dashboard():
         "dashboard.html",
         username=session["user_name"]
     )
+@app.route("/questions/<crime_type>")
+def questions(crime_type):
+
+    questions = get_questions(crime_type)
+
+    return {
+        "crime_type": crime_type,
+        "questions": questions
+    }
+@app.route("/guidance/<crime_type>")
+def guidance(crime_type):
+
+    guidance = get_guidance(crime_type)
+
+    return {
+        "crime_type": crime_type,
+        "guidance": guidance
+    }
 @app.route("/awareness")
 def awareness():
     return render_template("awareness.html")
