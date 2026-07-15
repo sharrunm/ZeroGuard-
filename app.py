@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request , redirect, session
 from werkzeug.security import generate_password_hash, check_password_hash
 from config import Config
-from database.models import db, User
+from database.models import db, User, Complaint
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
@@ -87,8 +87,15 @@ def report():
 
         description = request.form["description"]
 
-        print("Incident Description:")
-        print(description)
+        complaint = Complaint(
+            user_id=session["user_id"],
+            description=description,
+            crime_type="Pending AI Analysis",
+            status="Pending"
+        )
+
+        db.session.add(complaint)
+        db.session.commit()
 
         return redirect("/dashboard")
 
