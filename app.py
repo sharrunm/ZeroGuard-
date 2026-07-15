@@ -76,10 +76,22 @@ def register():
         return redirect("/login")
 
     return render_template("register.html")
-@app.route("/report")
+@app.route("/report", methods=["GET", "POST"])
 def report():
-    return render_template("report.html")
 
+    if "user_id" not in session:
+        return redirect("/login")
+
+    if request.method == "POST":
+
+        description = request.form["description"]
+
+        print("Incident Description:")
+        print(description)
+
+        return redirect("/dashboard")
+
+    return render_template("report.html")
 @app.route("/chatbot")
 def chatbot():
     return render_template("chatbot.html")
