@@ -2,6 +2,7 @@ from flask import Flask, render_template, request , redirect, session
 from werkzeug.security import generate_password_hash, check_password_hash
 from config import Config
 from database.models import db, User
+from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 
